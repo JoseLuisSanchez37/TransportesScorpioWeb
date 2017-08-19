@@ -1,0 +1,49 @@
+body::after {
+    content: "";
+    background: url(/appscorpio/public/ui/img/logo.jpg) no-repeat left top;
+	background-size: 80%;
+	opacity: 0.19;
+    top: 20px;
+    left: 200px;
+    bottom: 0;
+    right: 0;
+    position: fixed;
+    z-index: -1;  
+}
+
+
+h1 {
+  font-family: "Avant Garde", Avantgarde, "Century Gothic", CenturyGothic, "AppleGothic", sans-serif;
+  font-size: 90px;
+  padding: 0px 30px;
+  text-align: center;
+  text-transform: uppercase;
+  text-rendering: optimizeLegibility;
+}
+h1.retroshadow{
+  color: #e53935;
+  letter-spacing: .05em;
+  text-shadow: 4px 4px 0px mediumblue, 7px 7px 0px rgba(0, 0, 0, 0.2);
+}
+h1.deepshadow {
+  color: #e53935;
+  letter-spacing: .100em;
+  text-shadow: 0 -1px 0 darkblue, 0 1px 0 darkblue, -1px 2px 0 darkblue, -2px 3px 0 darkblue, -3px 4px 0 darkblue, -4px 5px 0 darkblue, -5px 6px 0 darkblue, -6px 7px 0 mediumblue, -7px 8px 0 mediumblue, -8px 9px 0 mediumblue, -9px 10px 0 mediumblue, -10px 11px 0 mediumblue,  10px 22px 30px rgba(0, 0, 0, 0.9);
+}
+
+p {
+  animation-duration: 3s;
+  animation-name: slidein;
+}
+
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+    width: 300%
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}

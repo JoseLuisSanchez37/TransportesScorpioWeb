@@ -1,0 +1,16 @@
+{
+    "name": "marcos/autotransporte",
+    "description": "Autotransporte Scorpio",
+    "type": "project",
+    "require": {
+        "twig/twig": "2.0"
+    },
+    "license": "Private",
+    "authors": [
+        {
+            "name": "Marcos Mtz",
+            "email": "mark.mz.hz@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}

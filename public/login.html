@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Login</title>
+        <!-- <base href="/appscorpio/public/"> -->
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
+        <link rel="stylesheet" href="http://www.transportescorpio.com/appscorpio/public/ui/css/responsive.css">
+    </head>
+    <body>
+        <div class="container hijo">
+            <div id="login-page" class="row">
+                <div class="col l6 offset-l3 z-depth-4 card-panel">
+                    <form class="login-form">
+                        <div class="row">
+                            <div class="input-field col s12 center">
+                                <img src="http://www.transportescorpio.com/appscorpio/public/ui/img/logo.jpg" width="300" height="80" alt="" class="circle responsive-img valign profile-image-login">
+                                <p class="center login-form-text h1">Autotransportes Scorpio</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">person_pin</i>
+                                <input class="validate" id="email" type="email" value="" required="required">
+                                <label for="email" class="center-align" data-error="Correo incompleto">Correo electr&oacute;nico</label>
+                            </div>
+                        </div>
+                        <div class="row margin">
+                            <div class="input-field col s12">
+                                <i class="material-icons prefix">lock</i>
+                                <input class="validate" id="password" type="password" value="" required="required">
+                                <label for="password">Contrase&ntilde;a</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="center input-field col s12">
+                                <a  type="button" id="logear" class="waves-effect waves-light btn light-blue darken-2 ">Entrar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>                       
+        <!--div id="modal1" class="modal">
+            <div class="modal-content">
+                <h4>Atención! 'Versión Beta'</h4>
+                <p>Ingrese un correo electrónico.</p>
+            </div>
+            <div class="modal-footer">
+                <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Aceptar</a>
+            </div>
+        </div-->
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        
+        <script type="text/javascript" src="http://www.transportescorpio.com/appscorpio/public/ui/js/materialize.min.js"></script> 
+        <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+        <script src="http://www.transportescorpio.com/appscorpio/public/ui/js/loginok.js"></script>
+    </body>
+</html>

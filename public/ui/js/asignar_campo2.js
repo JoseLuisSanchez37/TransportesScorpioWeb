@@ -21,7 +21,7 @@ $(document).ready(function () {
 
     var camionConFecha = [];
 
-    var cargarCamiones = function() {
+    var cargarCamiones = function () {
         referencia.on("child_added", function (data) {
             camionConFecha = [];
 
@@ -54,21 +54,78 @@ $(document).ready(function () {
     // var btnaddempl = $('iframe[name=frame_empleado]').contents().find('#btn_nuevotrabajador');//.val();
     //btnaddempl.addEventListener("click",lista);
 
-    var refTemCampo = firebase.database().ref("temporada_campo").orderByKey().limitToLast(1);
+
+    var useremail = "";
+    var emailsinarroba = "";
+    var obtenerSedeDeUsuarioLogueado = function (callback) {
+        firebase.auth().onAuthStateChanged(function (user) {
+            useremail = user.email;
+            emailsinarroba = useremail.substr(0, useremail.indexOf("@"));
+            var informacionusuario = firebase.database().ref('usuarios/' + emailsinarroba);
+            informacionusuario.once('value', function (data) {
+                if (callback) callback(data.val().sede);
+                //sede = data.val().sede;
+
+            });
+
+        });
+    };
+    var obtenerTemporadaPorSede = function (sede, callback) {
+        var refTemporadaSedes = firebase.database().ref("temporadas_sedes/" + sede);
+        refTemporadaSedes.on("child_added", function (data) {
+            if (callback) callback(data.val());
+        });
+    };
+
+
     var incre = 1;
     var campos;
-    refTemCampo.on("child_added", function (valor) {
-        var Ref = firebase.database().ref("temporada_campo").child(valor.key);
-        Ref.on("child_added", function (datosT) {
-            campos = '<option value="' + datosT.key + '">' + datosT.key + '</option>';
-            incre++;
-            $(campos).appendTo('#campos');
-        });
+    var camposEsEspecial = [];
+    var cargarCampos = function () {
+        camposEsEspecial = [];
+        obtenerSedeDeUsuarioLogueado(function (sede) {
+            //console.log(sede);
+            obtenerTemporadaPorSede(sede, function (temporada) {
+                var refCampo = firebase.database().ref("temporada_campo/" + temporada);
+                refCampo.on("child_added", function (dataResponse) {
+                    //console.log(dataResponse.key, dataResponse.val(), "nooooo");
 
-        $(document).ready(function () {
-            $('select').material_select();
+                    camposEsEspecial.push({
+                        campo: dataResponse.key,
+                        esEspecial : dataResponse.val()
+                    });
+                    campos = '<option value="' + dataResponse.key + '">' + dataResponse.key + '</option>';
+                    //incre++;
+                    $(campos).appendTo('#campos');
+                    $(document).ready(function () {
+                        $('select').material_select();
+                    });
+                });
+            });
         });
-    });
+    };
+    cargarCampos();
+    
+
+
+
+    //var refTemCampo = firebase.database().ref("temporada_campo").orderByKey();//.limitToLast(1)
+    //var incre = 1;
+    //var campos;
+    //refTemCampo.on("child_added", function (valor) {
+    //    //console.log(valor.key, "valor");
+    //    var Ref = firebase.database().ref("temporada_campo").child(valor.key);
+    //    Ref.on("child_added", function (datosT) {
+    //        //console.log(datosT.key, datosT.val(), "vamos");
+    //        campos = '<option value="' + datosT.key + '">' + datosT.key + '</option>';
+    //        incre++;
+    //        $(campos).appendTo('#campos');
+    //    });
+
+    //    $(document).ready(function () {
+    //        $('select').material_select();
+    //    });
+    //});
 
     var checkboxes = document.getElementById("camion_espera");
     var AsignarCampo = document.getElementById("btn_asignar");
@@ -90,7 +147,13 @@ $(document).ready(function () {
                 checkBoxesIds.push(checkboxes[e].value);
             }
         }
-        asignarCampoEmpleado(Select.value, checkBoxesIds);
+
+        //console.log(camposEsEspecial, "ok", Select.value);
+        var campoTemp = camposEsEspecial.find(c => c.campo === Select.value);
+        campoTemp = campoTemp.esEspecial === "true" ? true : false;
+
+        
+        asignarCampoEmpleado(Select.value, campoTemp, checkBoxesIds);
         return;
         var Clave = [];
         var t = 0;
@@ -142,7 +205,7 @@ $(document).ready(function () {
 
                                     RefEmpleados.update({ ID: ID_Empleado });
 
-                                    var RefInser = firebase.database().ref("asignacion_empleados_campo").child(data.key).child(Select.value);//.child(NomCampo.value);
+                                    var RefInser = firebase.database().ref("asignacion_empleados_campo").child(data.key).child(Select.value);//.child(NomCampo.value);   
                                     var empl_id = {};
                                     empl_id[pushid] = { ID: ID_Empleado };
                                     RefInser.update(empl_id);
@@ -195,27 +258,7 @@ $(document).ready(function () {
         });
     }
 
-    var useremail = "";
-    var emailsinarroba = "";
-    var obtenerSedeDeUsuarioLogueado = function (callback) {
-        firebase.auth().onAuthStateChanged(function (user) {
-            useremail = user.email;
-            emailsinarroba = useremail.substr(0, useremail.indexOf("@"));
-            var informacionusuario = firebase.database().ref('usuarios/' + emailsinarroba);
-            informacionusuario.once('value', function (data) {
-                if (callback) callback(data.val().sede);
-                //sede = data.val().sede;
 
-            });
-
-        });
-    };
-    var obtenerTemporadaPorSede = function (sede, callback) {
-        var refTemporadaSedes = firebase.database().ref("temporadas_sedes/" + sede);
-        refTemporadaSedes.on("child_added", function (data) {
-            if (callback) callback(data.val());
-        });
-    };
     var obtenerCampoPorTemporada = function (temporada, callback) {
         var refCompoPorTem = firebase.database().ref("temporada_campo/" + temporada);
         refCompoPorTem.on("child_added",
@@ -255,12 +298,12 @@ $(document).ready(function () {
 
 
     var obtenerEmpleadosPorPushId = function (pushIds, callback) {
-        console.log(pushIds, "pushIds");
+        //console.log(pushIds, "pushIds");
         for (var key in pushIds) {
 
             var referEmpleado = firebase.database().ref("empleados/" + key);
             referEmpleado.once("value").then(function (data) {
-                console.log(data.val(), data.key);
+                //console.log(data.val(), data.key);
                 var o = {};
                 o = data.val();
                 o.pushId = data.key;
@@ -296,16 +339,18 @@ $(document).ready(function () {
         refIndice.set(indice);
     };
 
-    var asignarCampoEmpleado = function (camposaAsignar, idsCamiones) {
-        var nodo = "Test/";//Cambiar por el nodo real que es asignacion_empleados_campo
+    var asignarCampoEmpleado = function (camposaAsignar, esEspecial, idsCamiones) {
+        var nodo = "asignacion_empleados_campo/";//Cambiar por el nodo real que es asignacion_empleados_campo
+        var nodoPaseDeLista = "pase_de_lista/";
 
 
 
         obtenerSedeDeUsuarioLogueado(function (sede) {
             nodo = nodo + sede;
+            nodoPaseDeLista = nodoPaseDeLista + sede;
             obtenerTemporadaPorSede(sede, function (temporada) {
                 nodo = nodo + "/" + temporada + "/" + camposaAsignar;
-
+                nodoPaseDeLista = nodoPaseDeLista + "/" + camposaAsignar;
                 var referenciaEmpleadoAsignado = firebase.database().ref(nodo);
                 obtenerIndice(function (indice) {
                     for (var j = 0; j < idsCamiones.length; j++) {
@@ -313,7 +358,15 @@ $(document).ready(function () {
                             //console.log(objectIds,'keys');
                             obtenerEmpleadosPorPushId(objectIds, function (empleadoAsignados) {
                                 //console.log(empleadoAsignados, "empleadoAsignados");
+
                                 indice++;
+                                
+
+                                var referPaseDeList = firebase.database().ref(nodoPaseDeLista);
+                                if (esEspecial === false) {
+                                    referPaseDeList.child(indice).set(empleadoAsignados.Actividad);
+                                }
+                                
 
                                 empleadoAsignados.campos = {};
                                 empleadoAsignados.sede = sede;
@@ -335,3 +388,4 @@ $(document).ready(function () {
         });
     };
 });
+

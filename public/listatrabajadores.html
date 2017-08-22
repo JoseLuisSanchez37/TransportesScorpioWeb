@@ -93,7 +93,16 @@
         <div class="row ">
             <div class="col s8 offset-s2 z-depth-4 card-panel">
                 <div class="col s12">
-                    <h5>Listado de trabajadores</h5>
+                    <h5>Listado de trabajadores por Camiones</h5>
+                    <label>Salidas</label>
+                    <select id="camiones">
+                        <option value="" disabled selected>Elige una salida</option>
+                    </select>
+                    <div class="row">
+                        <div class="center input-field col s12">
+                            <button type="button" id="btn_consultar" class="waves-effect waves-light btn light-blue darken-2 ">Consultar</button>
+                        </div>
+                    </div>
                     <table id="tbl_trabajadores" class="display" >
                         <thead>
                             <tr>

@@ -109,7 +109,7 @@ function nuevoTrabajador() {
         Lugar_Nacimiento: lugar_nacimiento.value,
         CURP: curp.value,
         Contrato: contrato.value,
-        
+        Enganche: 1000
     };
     
        

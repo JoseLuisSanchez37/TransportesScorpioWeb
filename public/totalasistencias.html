@@ -1,36 +1,17 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
     <head>
         <meta charset="utf-8">
-        <title>Agregar Campo</title>
+        <title>Asistencias</title>
         <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css">
-        <style type="text/css">
-            body {
-                overflow: hidden;
-            }
-            /* preloader */
-            #preloader {
-                position: fixed;
-                top:0; left:0;
-                right:0; bottom:0;
-                background: #000;
-                z-index: 100;
-            }
-            #loader {
-                width: 400px;
-                height: 400px;
-                position: absolute;
-                left:40%; top:10%;
-                background: url(ui/img/rojo.gif) no-repeat center 0;
-                margin:-50px 0 0 -50px;
-            }
-        </style>        
     </head>
     <body>
-    <section>        
 
+     <section>
         <nav class="red darken-1">
             <div class="container">
             <a href="index.html" class="navbar-brand"><img src="ui/img/scorpion.png"  style="margin-right: 70px; margin-top:7px;" width="60" height="50" align="left" ></a>
@@ -120,48 +101,65 @@
                 </div>
             </div>
         </nav>
-
     </section>
+    
 
         <div class="row ">
             <div class="col s8 offset-s2 z-depth-4 card-panel">
                 <div class="col s12">
-                    <h5 align="center">Agregar Campo</h5>
+                    <h5>Listado de numero de asistencias por dia</h5>
+
+                    <div class="row" >
+                    Selecciona un campo<br>
+                     <p id="Campos"></p>
+                    </div>
+
+                    <div class="col s6">
+                      Fecha Inicio: <input type="text" id="datepickerInicio" class="datepicker">  
+                    </div>
+
+                    <div class="col s6">                        
+                      Fecha Fin: <input type="text" id="datepickerFin" class="datepicker">
+                    </div>
+
+
+                <div class="row">
+                    <div class="center" class="input-field col s12">
+                        <button type="button" id="btn_cargarListas" class="waves-effect waves-light btn light-blue darken-2 ">Mostrar Asistencias</button>
+                       <!--  <button type="reset" id="cancel_temp" class="waves-effect waves-light btn light-blue darken-2">Cancelar</button> -->
+                    </div>
                 </div>
-                <form class="trabajador-form" id="AddCampo">
-                    <label for="addcamp">Nombre del campo</label>
-                    <input id="addcamp" type="text" value=""  class="left-align" data-length="30">
-                    <label> Temporada</label>
-                    <input type="text" id="temp" disabled>
+                
+                    <h6 id="nombrecampo"></h6>
 
 
-                    <div class="row">
-                    <label>Tipo De Campo</label> <br>
-                    <input name="tipodecampo" type="radio" value="false" id="CampoNormal"  checked="true" /> <label for="CampoNormal">Normal</label>
-                    <input name="tipodecampo" type="radio" value="true" id="CampoEspecial" /> <label for="CampoEspecial">Especial</label>       
-                    </div>
-
-
-                    <div class="row">
-                        <div class="center" class="input-field col s12">
-                            <button type="button" id="btn_addcamp" class="waves-effect waves-light btn light-blue darken-2 ">Agregar</button>
-                            <button type="reset" id="cancel_addcamp" class="waves-effect waves-light btn light-blue darken-2">Cancelar</button>
-                        </div>
-                    </div>
-                </form>                     
+                    <table id="tbl_asistencias" class="display" >
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Numero De Jornales(asistencias)</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
+
+
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+
+
         <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
         <script type="text/javascript" src="ui/js/materialize.min.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>   
+        <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+        <!--script src="https://www.gstatic.com/firebasejs/4.1.2/firebase.js"></script-->
+        <!-- <script type="text/javascript" src="http://www.transportescorpio.com/pruebas/ui/js/app.js"></script> -->
+        <script type="text/javascript" src="http://www.transportescorpio.com/appscorpio/public/ui/js/app.js"></script> 
+
+        <script type="text/javascript" src="ui/js/totalasistencias.js"></script>
+        <script src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
         <script type="text/javascript" src="ui/js/salir.js"></script>
-        <script type="text/javascript" src="ui/js/app.js"></script>
-        <script type="text/javascript" src="ui/js/agregar_campo.js"></script> 
-        <script type="text/javascript">
-                $(window).load(function() {
-                    $('#preloader').fadeOut('slow');
-	                   $('body').css({'overflow':'visible'});
-                })
-        </script>
     </body>
 </html>

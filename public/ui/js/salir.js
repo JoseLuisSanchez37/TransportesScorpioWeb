@@ -1,10 +1,12 @@
 "use strict";
 
-document.getElementById('salir').addEventListener('click', function () {
-    event.preventDefault();
-    firebase.auth().signOut();
-}, false);
-document.getElementById('salir2').addEventListener('click', function () {
-    event.preventDefault();
-    firebase.auth().signOut();
-}, false);
+function CerrarSesion()
+{
+	firebase.auth().signOut().then(function() {
+		console.log('Sesion Cerrada')
+	}).catch(function(error) {
+  		alert('Ocurrio Un Error Al Cerrar Sesion');
+	});
+}
+
+

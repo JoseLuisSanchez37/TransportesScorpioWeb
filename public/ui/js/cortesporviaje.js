@@ -1,70 +1,102 @@
 "use strict";
-
 $(document).ready(function(){
-    var reffechasasistenciascampo = firebase.database().ref('asistencias/Sinaloa/');
-    reffechasasistenciascampo.on('child_added',function(datafecha){ 
-        //itercion primera para abrir 
-    });
-
     var useremail = "";
     var emailsinarroba ="";
     firebase.auth().onAuthStateChanged(function (user) {
         useremail = user.email;
         emailsinarroba  =  useremail.substr(0,useremail.indexOf("@"));
-
         var informacionusuario = firebase.database().ref('usuarios/' + emailsinarroba  ); 
         informacionusuario.once('value',function(data){
             sede = data.val().sede;
-
             var reftemporadaactual = firebase.database().ref('temporadas_sedes/' + sede + '/'); 
             reftemporadaactual.once('value',function(datatemporada){
                 temporadaactual = datatemporada.val().Temporada_Actual;
                 ObtenerSalarios();
+                //CargarSalidasPorCampo();
+                CargarLlenadoCampos();
             });            
         });
     });
 
-    var reffechassalidas = firebase.database().ref('salidasCopia/'); 
-    reffechassalidas.on('child_added',function(datafechassalidas){
-        var fechasalida = datafechassalidas.key;
-
-        var refcamiones = firebase.database().ref('salidasCopia/' + fechasalida + '/' ); 
-        refcamiones.on('child_added',function(datacamiones){
-            var camion = datacamiones.key;
-            var numtrabajadores = 0;
-
-            var refnumempleados = firebase.database().ref('salidasCopia/' + fechasalida + '/' + camion + '/');
-            refnumempleados.once('value',function(datanumempleados){
-                numtrabajadores = datanumempleados.numChildren();
-            });
-
-            var fechapedazos = fechasalida.split('-');
-            var fechacompleta = fechapedazos[2] +'/'+ fechapedazos[1] + '/' + fechapedazos[0];
-            var fechainicio = sumaFecha(2,fechacompleta);
-            var fechafinal = sumaFecha(92,fechacompleta);
-
-            var fila = '<tr>' +
-            '<td>' + fechainicio + '</td>' +
-            '<td>' +  fechafinal + '</td>' +
-            '<td>' + camion + '</td>' +
-            '<td>' +  numtrabajadores + '</td>'+ 
-            '<td>' + 
-            '<p> <a onclick="GenerarListado(name);" name="'+ fechasalida + '/' + camion + '" class="waves-effect waves-light btn">Listado</a> </p>' +
-            '<a disabled=true  onclick="terminarcontrato(name)" id="btntercon_'+ fechasalida.replace('-','_') + '_' + camion +'_" name="'+ fechasalida + '/' + camion + '"  class="waves-effect waves-light btn red">Terminar Contrato</a>' +
-            '</td>' +
-            '</tr>';
-            var btn = document.createElement("TR");
-            btn.innerHTML=fila;
-            document.getElementById("tablita").appendChild(btn);
-        });
-    });  
+  
 });
+
+  function CargarLlenadoCampos() //llenado del combo de campos 
+  {
+    var campos ="";
+    var refCampo = firebase.database().ref("temporada_campo/" + temporadaactual );
+        refCampo.on("value", function (dataResponse) {
+            dataResponse.forEach(function(child){
+            campos = '<option value="' + child.key + '">' + child.key + '</option>';
+            $(campos).appendTo('#campos');
+            });
+            $(document).ready(function () {
+                $('select').material_select();
+            });
+        });
+  }
+
+var AsignarCampo = document.getElementById("btn_Seleccionar");
+AsignarCampo.addEventListener("click", CargarSalidasPorCampo, false);
+
+
+function CargarSalidasPorCampo()
+{
+   document.getElementById('tablita').innerHTML = '';   //limpiar tabla  
+  var Select = document.getElementById("campos");
+
+  if (Select.value.length <= 0) {
+    alert('Seleccione Un Campo');
+    return;
+    }
+   
+    var campo = Select.value;
+    camposeleccionado = campo;
+  
+    var reffechassalidas = firebase.database().ref('SalidasFiltro/' + sede + '/' + temporadaactual + '/' + campo); 
+    reffechassalidas.once('value',function(datafechassalidas){
+        //console.log(datafechassalidas.val());
+        datafechassalidas.forEach(function(childFecha){
+          //console.log(childFecha.key);
+          var fechasalida  = childFecha.key;
+            childFecha.forEach(function(childCamion){
+              //console.log(childCamion.key);
+              var camion = childCamion.key;
+              //console.log(childCamion.numChildren());
+              var numtrabajadores = 'PENDIENTE' //childCamion.numChildren();
+              var fechapedazos = fechasalida.split('-');
+              var fechacompleta = fechapedazos[2] +'/'+ fechapedazos[1] + '/' + fechapedazos[0];
+              var fechainicio = sumaFecha(2,fechacompleta);
+              var fechafinal = sumaFecha(92,fechacompleta);
+              var fila = '<tr>' +
+              '<td>' + fechasalida + '</td>' +
+              '<td>' + fechainicio + '</td>' +
+              '<td>' +  fechafinal + '</td>' +
+              '<td>' + camion + '</td>' +
+              '<td>' +  numtrabajadores + '</td>'+ 
+              '<td>' + 
+              '<p> <a onclick="GenerarListado(name);" name="'+ fechasalida + '/' + camion + '" class="waves-effect waves-light btn">Listado</a> </p>' +
+              '<a disabled=true  onclick="terminarcontrato(name)" id="btntercon_'+ fechasalida.replace('-','_') + '_' + camion +'_" name="'+ fechasalida + '/' + camion + '"  class="waves-effect waves-light btn red">Terminar Contrato</a>' +
+              '</td>' +
+              '</tr>';
+              var btn = document.createElement("TR");
+              btn.innerHTML=fila;
+              document.getElementById("tablita").appendChild(btn);
+            });
+        });
+
+    });
+
+}
+
 
 function ObtenerSalarios()
 {
     var refsalarios = firebase.database().ref('temporada/' + temporadaactual + '/salarios/'); 
-    refsalarios.on('child_added',function(datasalarios){
-        salarios[datasalarios.key] = datasalarios.val();
+    refsalarios.once('value',function(datasalarios){
+       datasalarios.forEach(function(childSalarios){
+          salarios[childSalarios.key] = childSalarios.val();
+       });
     });
 }
 
@@ -89,7 +121,7 @@ function ImprimirListado()
 }
 
 var seimprimiolistado = false;
-
+var camposeleccionado = "";
 function terminarcontrato(dato)
 {
     var eliminardeasistenciaas = "";
@@ -157,7 +189,7 @@ function terminarcontrato(dato)
                if(y==idempladosrenuevan.length)
                {
                 var eliminarasignacioncampo = firebase.database().ref('asignacion_empleados_campo/' + sede + '/' + temporadaactual + '/' + arrayterminocontrato[x][14] + '/' + arrayterminocontrato[x][13] ).remove();
-                alert(eliminarasignacioncampo);
+                //alert(eliminarasignacioncampo);
                 var refeliminar = firebase.storage().ref('imagenes/'+ arrayterminocontrato[x][1] +'.jpg');
                 refeliminar.delete().then(function() {
                     console.log('Se elimino la imagen');
@@ -171,6 +203,7 @@ function terminarcontrato(dato)
         reffechasasistenciascampo.on('child_added',function(datafecha){ 
         var reffechastrabajadas = firebase.database().ref('asistencias/' + sede + '/'  + campoeliminacion + '/' + datafecha.key + '/' + eliminardeasistenciaas ).remove();
         });
+        //reffechasasistenciascampo.off();
         var refeliminarpaselista = firebase.database().ref('pase_de_lista/' +   sede + '/' +  arrayterminocontrato[x][14] + '/' + arrayterminocontrato[x][0]).remove();
         var refeliminarregistrostrabajadores = firebase.database().ref('registros_trabajadores/' + sede + '/' +  arrayterminocontrato[x][14] + '/' + arrayterminocontrato[x][0]).remove();            
     }
@@ -179,7 +212,12 @@ function terminarcontrato(dato)
         var salidaEliminara = firebase.database().ref('salidasCopia/' + dato);
         console.log(salidaEliminara);
         salidaEliminara.remove();
-        alert('Termino de contrato realizado');        
+        var SalidaFiltroEliminara = firebase.database().ref('SalidasFiltro/' + sede + '/' + temporadaactual + '/' + camposeleccionado + '/' + dato);
+        console.log("Referencia Eliminar: " + SalidaFiltroEliminara);
+        //console.log(SalidaFiltroEliminara);
+        SalidaFiltroEliminara.remove();
+        alert('Termino de contrato realizado');
+        location.reload(true);        
     }
 }
 else
@@ -196,93 +234,114 @@ var arrayterminocontrato = new Array();
 var listadoseleccionado = "";
 var viajeseleccionado="";
 
+var campos = new Array();
+
 function GenerarListado(dato)
 {
-   document.getElementById('bodylistadoempleados').innerHTML = '';   //limpiar tabla   
-    viajeseleccionado = dato;
-    listadoseleccionado = dato;
-    var ListadoPushId = new Array();
-        $('.modal').modal();
-        $('#modal1').modal('open');
+  
+  viajeseleccionado = dato;
+   document.getElementById('bodylistadoempleados').innerHTML = '';   //limpiar tabla  
+   $('.modal').modal();
+   $('#modal1').modal('open');
+   var campo = camposeleccionado; // es el que se seleccionara del combo
 
-        var refempleadospushid = firebase.database().ref('salidasCopia/' + dato  + '/'); 
-        refempleadospushid.on('child_added',function(dataemp){
-            ListadoPushId.push(dataemp.key);
-            var pushid = dataemp.key;
-            var refcampos = firebase.database().ref('asignacion_empleados_campo/' + sede  + '/' + temporadaactual + '/'); 
-            refcampos.on('child_added',function(datacampos){
-               var campo = datacampos.key;
-               var refids = firebase.database().ref('asignacion_empleados_campo/' + sede  + '/' + temporadaactual + '/' + campo + '/'); 
-               refids.on('child_added',function(dataids){
-                var pusidrec  = dataids.val().pushId;
-                console.log('Buscando..');
+   var pushidempleados = new Array();
+   var refempleadospushid = firebase.database().ref('salidasCopia/' + dato  + '/'); 
+   refempleadospushid.once('value',function(dataemp){
 
-                    if(pusidrec == pushid)
-                    {
-                      console.log('Encontro...');
-                      
-                        var idnormalasigsis = dataids.key;
-                        var idbuscar = dataids.key;
-                        if(dataids.val().IDExterno != 'undefined')
-                        {
-                            idbuscar = dataids.val().IDExterno;
-                        }
+      dataemp.forEach(function(childPushIds){
+      //console.log(childPushIds.key);
+      var pushid = childPushIds.key;
+        pushidempleados.push(pushid);
+      });       
 
-                        var totalasistencias= 0;
-                        var totalgiros = 0;
-                        var totalprestamos = 0;
-                        var totaldiastrabajados = 0;
+      var refids = firebase.database().ref('asignacion_empleados_campo/' + sede  + '/' + temporadaactual + '/' + campo + '/'); 
+      refids.once('value',function(dataids){
+        dataids.forEach(function(childDatosEmpleado){
+        var pushid = childDatosEmpleado.val().pushId;
+        var idnormalasigsis = childDatosEmpleado.key;
 
-                        var refprestamos = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/prestamos/'); 
-                        refprestamos.on('child_added',function(dataprestamos){
-                            totalprestamos =  totalprestamos +  parseInt(dataprestamos.val());
-                        });
+          var resultadoBusquedaIndex = pushidempleados.indexOf(pushid);
+          if(resultadoBusquedaIndex >= 0 )
+          {
+           // console.log("Existe en posision: " + resultadoBusquedaIndex);
+            //console.log(idnormalasigsis);
+        
+            //
+            var idbuscar = idnormalasigsis;
+            if(childDatosEmpleado.val().IDExterno != 'undefined')
+              {
+                idbuscar = childDatosEmpleado.val().IDExterno
+              }
 
-                        var refgiros = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/giros/'); 
-                        refgiros.on('child_added',function(datagiros){
-                            totalgiros =  totalgiros + parseInt(datagiros.val());
-                        });
 
-                        var refasistencias = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/asistencias/'); 
-                        refasistencias.on('child_added',function(dataasistencias){
-                            var pago = parseInt(salarios[dataasistencias.val()]);
-                            totalasistencias =  totalasistencias + pago;
-                            totaldiastrabajados = totaldiastrabajados + 1;
-                        }); 
+            var totalasistencias= 0;
+            var totalgiros = 0;
+            var totalprestamos = 0;
+            var totaldiastrabajados = 0;
 
-                        var refasistencias = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/asistencias/').limitToFirst(1); 
-                        refasistencias.on('child_added',function(dataasistencias){
-                       var fechasalida = dataids.val().Fecha_Salida;
-                       var fechapedazos = fechasalida.split('-');
-                       var fechacompleta = fechapedazos[2] +'/'+ fechapedazos[1] + '/' + fechapedazos[0];
-                       var fechainicio = sumaFecha(2,fechacompleta);
-                       var fechafinal = sumaFecha(92,fechacompleta);
-                       var nomcompleto = dataids.val().Nombre + ' ' + dataids.val().Apellido_Paterno + ' ' + dataids.val().Apellido_Materno ; 
-                       var enganche = parseInt(dataids.val().Enganche);
-                       var totalapagar = totalasistencias - (totalgiros + totalprestamos + enganche);
-                       var filaempleado = '<tr>' + 
-                       '<td><input type="checkbox" id="checkbox' + idbuscar +  '_"/> <label for="checkbox' + idbuscar + '_"></label></td>' +
-                       '<td>' + idbuscar +'</td>' +
-                       '<td>' + dataids.val().CURP +'</td>' +
-                       '<td>'+nomcompleto+'</td>' +
-                       '<td>'+ dataids.val().Enganche+'</td>' +
-                       '<td>'+totaldiastrabajados+'</td>' + 
-                       '<td>$'+totalasistencias+'</td>' + 
-                       '<td>$'+totalgiros+'</td>' + 
-                       '<td>$'+totalprestamos+'</td>' + 
-                       '<td>$'+totalapagar+'</td>' + 
-                       '</tr>';
-                       var btn = document.createElement("TR");
-                       btn.innerHTML=filaempleado;
-                       document.getElementById("bodylistadoempleados").appendChild(btn);
-                       var value = [idbuscar, dataids.val().CURP, nomcompleto, fechainicio, fechafinal, "$ " + dataids.val().Enganche,totaldiastrabajados, "$ " +  totalasistencias, "$ " + totalgiros, "$ " + totalprestamos, "$ " + totalapagar];
-                       arrempleadostabla.push(value);
-                       var valuetermino = [idbuscar, dataids.val().pushId,dataids.val().CURP, dataids.val().Apellido_Materno, dataids.val().Apellido_Paterno, dataids.val().CURP, dataids.val().Fecha_Nacimiento, dataids.val().Fecha_Salida, dataids.val().Lugar_Nacimiento, dataids.val().Nombre, fechainicio, fechafinal, totaldiastrabajados,idnormalasigsis,campo];
-                       arrayterminocontrato.push(valuetermino);
-                   }); 
-                    }
-                });
-});
+            var refprestamos = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/prestamos/'); 
+              refprestamos.once('value',function(dataprestamos){
+               dataprestamos.forEach(function(childPrestamos){
+                totalprestamos =  totalprestamos +  parseInt(childPrestamos.val());
+               });
+            });
+
+            var refgiros = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/giros/'); 
+              refgiros.once('value',function(datagiros){
+              datagiros.forEach(function(childGiros){
+                totalgiros =  totalgiros + parseInt(childGiros.val());
+              });
+            });
+
+            //console.log(childCamion.numChildren());
+
+
+            var refasistencias = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/asistencias/'); 
+              refasistencias.on('child_added',function(dataasistencias){
+              var pago = parseInt(salarios[dataasistencias.val()]);
+              totalasistencias =  totalasistencias + pago;
+              totaldiastrabajados = totaldiastrabajados + 1;
+            });
+
+
+            var refasistencias2 = firebase.database().ref('registros_trabajadores/' + sede  + '/' + campo + '/' + idbuscar + '/asistencias/').limitToFirst(1); 
+                refasistencias2.once('value',function(dataasistencias){
+
+              var fechasalida = childDatosEmpleado.val().Fecha_Salida;
+              var fechapedazos = fechasalida.split('-');
+              var fechacompleta = fechapedazos[2] +'/'+ fechapedazos[1] + '/' + fechapedazos[0];
+              var fechainicio = sumaFecha(2,fechacompleta);
+              var fechafinal = sumaFecha(92,fechacompleta);
+              var nomcompleto = childDatosEmpleado.val().Nombre + ' ' + childDatosEmpleado.val().Apellido_Paterno + ' ' + childDatosEmpleado.val().Apellido_Materno ; 
+              var enganche = parseInt(childDatosEmpleado.val().Enganche);
+              var totalapagar = totalasistencias - (totalgiros + totalprestamos + enganche);
+              var filaempleado = '<tr>' + 
+                  '<td><input type="checkbox" id="checkbox' + idbuscar +  '_"/> <label for="checkbox' + idbuscar + '_"></label></td>' +
+                  '<td>' + idbuscar +'</td>' +
+                  '<td>' + childDatosEmpleado.val().CURP +'</td>' +
+                  '<td>'+nomcompleto+'</td>' +
+                  '<td>'+ childDatosEmpleado.val().Enganche+'</td>' +
+                  '<td>'+totaldiastrabajados+'</td>' + 
+                  '<td>$'+totalasistencias+'</td>' + 
+                  '<td>$'+totalgiros+'</td>' + 
+                  '<td>$'+totalprestamos+'</td>' + 
+                  '<td>$'+totalapagar+'</td>' + 
+                  '</tr>';
+                  var btn = document.createElement("TR");
+                  btn.innerHTML=filaempleado;
+                  document.getElementById("bodylistadoempleados").appendChild(btn);
+                  var value = [idbuscar, childDatosEmpleado.val().CURP, nomcompleto, fechainicio, fechafinal, "$ " + childDatosEmpleado.val().Enganche,totaldiastrabajados, "$ " +  totalasistencias, "$ " + totalgiros, "$ " + totalprestamos, "$ " + totalapagar];
+                  arrempleadostabla.push(value);
+                   var valuetermino = [idbuscar, childDatosEmpleado.val().pushId,childDatosEmpleado.val().CURP, childDatosEmpleado.val().Apellido_Materno, childDatosEmpleado.val().Apellido_Paterno, childDatosEmpleado.val().CURP, childDatosEmpleado.val().Fecha_Nacimiento, childDatosEmpleado.val().Fecha_Salida, childDatosEmpleado.val().Lugar_Nacimiento, childDatosEmpleado.val().Nombre, fechainicio, fechafinal, totaldiastrabajados,idnormalasigsis,campo];
+                    arrayterminocontrato.push(valuetermino);
+                  });
+                  //refasistencias.off() 
+            //
+          }
+
+        });  
+      }); //quitar esta
 });
 }
 

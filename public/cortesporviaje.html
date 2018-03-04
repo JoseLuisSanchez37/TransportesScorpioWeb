@@ -107,10 +107,25 @@
                 <center>
                     <h5>Cortes por viaje</h5> 
                 </center>
+
+                     <label>Seleccione Un Campo</label>
+                    <select id="campos">
+                        <option value="" disabled selected>Elige una opcion</option>
+                    </select>
+                    <div class="row">
+                        <div class="center input-field col s12">
+                            <button type="button" id="btn_Seleccionar" class="waves-effect waves-light btn light-blue darken-2 ">Seleccionar</button>
+                            <button type="reset" id="cancelar" class="waves-effect waves-light btn light-blue darken-2 ">Cancelar</button>
+
+                        </div>
+
+                    </div>
+                    
                 
                 <table id="tbl_salidas" class="striped centered responsive-table">
                     <thead>
                         <tr>
+                            <th>Fecha Salida</th>
                             <th>Fecha llegada</th>
                             <th>Fecha termino</th>
                             <th>Camion</th>
